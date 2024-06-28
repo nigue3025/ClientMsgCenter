@@ -10,8 +10,8 @@
 
 //#define Client HWND
 
-#ifndef _H
-#define _H
+#ifndef CLIENTMSGCENTER_H
+#define CLIENTMSGCENTER_H
 #endif
 
 #ifdef _WIN32
