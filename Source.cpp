@@ -115,6 +115,7 @@ int main()
 
 
 	std::shared_ptr<Client>  client  =std::make_shared<winClient>("12345");
+	//std::shared_ptr<Client>  client = std::make_shared<fakeClient>("12345");
 	clientCenter.subscribe(client, L"hi");
 	clientCenter.subscribe(client, L"hi2");
 	clientCenter.subscribe(client, L"testClass");
@@ -123,29 +124,7 @@ int main()
 	clientCenter.notifyClients(L"hi2");
 	clientCenter.notifyClients(L"testClass");
 
-	//clientCenter.mappingFunctions[;
 
-	std::vector<std::string*> strLst;//;; = { "a","b","c","d" };
-
-	{
-		std::string strAry[] = { "a","b","C","D" };
-
-		strLst.push_back(&strAry[0]);
-		strLst.push_back(&strAry[1]);
-		strLst.push_back(&strAry[2]);
-		strLst.push_back(&strAry[3]);
-
-
-		auto k = strLst.begin();
-		auto e = strLst.end();
-		for (auto k = strLst.begin(); k != strLst.end();)
-		{
-			k = strLst.erase(k);
-			//k = strLst.begin();
-
-		}
-
-	}
 
 
 	return 0;
