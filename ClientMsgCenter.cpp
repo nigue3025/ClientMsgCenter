@@ -1,111 +1,151 @@
 #include"ClientMsgCenter.h"
 #include<iostream>
-template<typename T>
-class AdvCoverMsgCenter :public ClientMsgCenter<T>
+
+
+
+bool ClientMsgCenter::enroll(std::shared_ptr<Client>client)
 {
-public:
-	AdvCoverMsgCenter()
-	{
-
-	}
-	AdvCoverMsgCenter(std::unordered_map<ClientMsg, std::function<bool(Client<T>*)>>*)
-	{
-
-	}
-	~AdvCoverMsgCenter()
-	{
-
-	}
-
-	bool checkClientError(Client<T>* client) override
-	{
-		auto iswindow= IsWindow(client->ID);
-		return iswindow;
-	}
-
-	//bool  notifyClients(ClientMsg& c) override
-	//{
-	//    
-	//	return false;
-	//}
-	bool sendClient(Client<T>* a)  override
-	{
-		
-		return false;
-	}
-		
-};
-
-bool func1(Client<HWND>* client)
-{
-	std::cout << "false" << std::endl;
-	return false;
+    std::lock_guard<std::mutex> lock(clientCtrMtx);
+    if (clients.find(client) == clients.end())
+    {
+        clients[client] = std::vector<ClientMsg>();
+        return true; // 成功註冊
+    }
+    return false; // client 已經存在
 }
 
-class TestClass
+
+
+bool ClientMsgCenter::notifyClients(ClientMsg clientMsg)
 {
-private:
-	int k = 1;
+    std::lock_guard<std::mutex> lock(clientCtrMtx);
+    if (mappingFunctions.find(clientMsg) == mappingFunctions.end())
+    {
+        //Subscrition string not defined
+        return false;
+    }
+    if (msgCenter.find(clientMsg) == msgCenter.end())
+    {
+        //Subscription string does not exist
+        return false;
+    }
 
-public:
+    if (msgCenter[clientMsg].size() == 0)
+    {
+        //No client found
+        return false;
+    }
 
-	Client<HWND>*client=nullptr;
-	bool testClient(Client<HWND>* client)
-	{
-		if (k == 1)
-			return false;
-	}
+    std::vector<std::shared_ptr<Client>> tempClients = msgCenter[clientMsg];
+    auto sendToClient = mappingFunctions[clientMsg];
+    std::vector<std::shared_ptr<Client>>errorClients;
+    for (auto tempClientPtr : tempClients)
+    {
+        auto tempClient = tempClientPtr.get();
+        if (isClientError(tempClient))
+            errorClients.push_back(tempClientPtr);
+        else
+            sendToClient(tempClient);
+    }
 
-};
-
-int main()
-{
-
-	AdvCoverMsgCenter<HWND> clientCenter; 
-	TestClass testclass;
-	clientCenter.mappingFunctions[L"hi"] = [](Client<HWND>* client) -> bool {
-		for (int i=0;i<10;++i)std::cout << "hi" << std::endl;return false;	};
-	clientCenter.mappingFunctions[L"hi2"] = &func1;
-	clientCenter.mappingFunctions[L"testClass"] = [&testclass](Client<HWND>* client) -> bool
-	{
-		return testclass.testClient(client);
-	};
-
-
-	HWND a;
-	auto client = std::make_shared<Client<HWND>>(a);
-	clientCenter.subscribe(client,L"hi");
-	clientCenter.subscribe(client, L"hi2");
-	clientCenter.subscribe(client, L"testClass");
-
-	clientCenter.notifyClients(L"hi");
-	clientCenter.notifyClients(L"hi2");
-	clientCenter.notifyClients(L"testClass");
-
-	//clientCenter.mappingFunctions[;
-	
-	std::vector<std::string*> strLst;//;; = { "a","b","c","d" };
-	
-	{
-		std::string strAry[] = { "a","b","C","D" };
-
-		strLst.push_back(&strAry[0]);
-		strLst.push_back(&strAry[1]);
-		strLst.push_back(&strAry[2]);
-		strLst.push_back(&strAry[3]);
-
-
-		auto k = strLst.begin();
-		auto e = strLst.end();
-		for (auto k = strLst.begin(); k != strLst.end();)
-		{
-			k = strLst.erase(k);
-			//k = strLst.begin();
-
-		}
-
-	}
-
-
-	return 0;
+    for (auto& tempClient : errorClients)
+        killClient(tempClient, true);
+    errorClients.clear();
+    return false;
 }
+
+bool ClientMsgCenter::killClient(std::shared_ptr<Client>client, bool IsLocked)
+{
+    if (!IsLocked)
+        std::lock_guard<std::mutex> lock(clientCtrMtx);
+    auto it = clients.find(client);
+    if (it != clients.end())
+    {
+        clients.erase(it);
+        for (auto& pair : msgCenter)
+        {
+            auto& vec = pair.second;
+            auto indx = std::remove(vec.begin(), vec.end(), client);
+            vec.erase(indx, vec.end());
+
+        }
+        return true; // 成功移除
+    }
+    return false; // client 不存在
+}
+
+
+bool ClientMsgCenter::subscribe(std::shared_ptr<Client>client, ClientMsg msg)
+{
+    std::lock_guard<std::mutex> lock(clientCtrMtx);
+    if (clients.find(client) == clients.end())
+    {
+        clients[client] = std::vector<ClientMsg>();
+    }
+    clients[client].push_back(msg);
+    msgCenter[msg].push_back(client);
+    return true;
+}
+
+
+bool ClientMsgCenter::isClientError(Client* client)
+{
+    return true;
+
+}
+
+
+
+
+
+ClientMsgCenter::ClientMsgCenter()
+{
+
+}
+ ClientMsgCenter::~ClientMsgCenter()
+{
+    killAllClients();
+}
+
+
+
+Client::~Client()
+{
+
+}
+
+
+
+
+bool ClientMsgCenter::killAllClients()
+{
+    std::lock_guard<std::mutex> lock(clientCtrMtx);
+    clients.clear();
+    msgCenter.clear();
+    return true;
+}
+
+
+
+Client::Client(std::string id) :ID(id)
+{
+
+}
+
+void Client::dummy()
+{
+
+}
+
+
+//template<typename ClientIDType> ClientMsgCenter<ClientIDType>::~ClientMsgCenter()
+//{
+//    killAllClients();
+//}
+//
+//
+//template<typename ClientIDType>
+//Client<ClientIDType>::~Client()
+//{
+//
+//}
