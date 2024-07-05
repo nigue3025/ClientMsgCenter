@@ -11,7 +11,7 @@ public:
 	{
 
 	}
-	AdvCoverMsgCenter(std::unordered_map<ClientMsg, std::function<bool(Client*)>>*)
+	AdvCoverMsgCenter(std::unordered_map<MsgCtrClientMsg, std::function<bool(Client*)>>*)
 	{
 
 	}
@@ -23,16 +23,7 @@ public:
 	bool isClientError(Client* client) override;
 
 
-	//bool  notifyClients(ClientMsg& c) override
-	//{
-	//    
-	//	return false;
-	//}
-	bool sendClient(Client* a)  override
-	{
 
-		return false;
-	}
 
 };
 
@@ -104,10 +95,11 @@ int main()
 
 	AdvCoverMsgCenter clientCenter;
 	TestClass testclass;
-	clientCenter.mappingFunctions[L"hi"] = [](Client* client) -> bool {
+
+	clientCenter.subscriptionReponseFunctions["hi"] = [](Client* client) -> bool {
 		for (int i = 0; i < 10; ++i)std::cout << "hi" << std::endl; return false;	};
-	clientCenter.mappingFunctions[L"hi2"] = &func1;
-	clientCenter.mappingFunctions[L"testClass"] = [&testclass](Client* client) -> bool
+	clientCenter.subscriptionReponseFunctions["hi2"] = &func1;
+	clientCenter.subscriptionReponseFunctions["testClass"] = [&testclass](Client* client) -> bool
 	{
 		return testclass.testClient(client);
 	};
@@ -116,13 +108,13 @@ int main()
 
 	std::shared_ptr<Client>  client  =std::make_shared<winClient>("12345");
 	//std::shared_ptr<Client>  client = std::make_shared<fakeClient>("12345");
-	clientCenter.subscribe(client, L"hi");
-	clientCenter.subscribe(client, L"hi2");
-	clientCenter.subscribe(client, L"testClass");
+	clientCenter.subscribe(client, "hi");
+	clientCenter.subscribe(client, "hi2");
+	clientCenter.subscribe(client, "testClass");
 
-	clientCenter.notifyClients(L"hi");
-	clientCenter.notifyClients(L"hi2");
-	clientCenter.notifyClients(L"testClass");
+	clientCenter.notifyClients("hi");
+	clientCenter.notifyClients("hi2");
+	clientCenter.notifyClients("testClass");
 
 
 
