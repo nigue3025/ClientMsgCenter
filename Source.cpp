@@ -109,7 +109,7 @@ int main()
 	windowClientMsgCenter.init(); 
 
 	//代刚case 1 (代刚Client璹綷琌Τ)
-	std::cout << "case1" << std::endl;
+	std::cout << "*****case1*****" << std::endl;
 	//client1璹綷
 	std::shared_ptr<Client>  client = std::make_shared<CustomedWindowClient>("client1");
 	windowClientMsgCenter.subscribe(client, "hello");
@@ -124,7 +124,7 @@ int main()
 	windowClientMsgCenter.notifyClients("message1");
 
 	//代刚case 2 (代刚璹綷琌Θ)
-	std::cout << "case2" << std::endl;
+	std::cout << "\n*****case2*****" << std::endl;
 	//璹綷
 	windowClientMsgCenter.unsubscribe(client, "hello");
 	windowClientMsgCenter.unsubscribe(client, "message1");
@@ -133,12 +133,12 @@ int main()
 	windowClientMsgCenter.notifyClients("message1");
 
 	//琩高-代刚case 3 (代刚琩高琌Θ)
-	std::cout << "case3" << std::endl;
+	std::cout << "\n*****case3*****" << std::endl;
 	windowClientMsgCenter.responseQuery(client2, "getSystemTime"); //ミ眔丁,獶璹綷家Α
 	windowClientMsgCenter.responseQuery(client, "getSystemTime"); //ミ眔丁,獶璹綷家Α
 	
 	//代刚case 4 (代刚LinuxClient琌ノ)
-	std::cout << "case4" << std::endl;
+	std::cout << "\n*****case4*****" << std::endl;
 	std::shared_ptr<Client>  linuxClient = std::make_shared<CustomedLiunxClient>("linuxClient");
 	windowClientMsgCenter.subscribe(linuxClient, "hello"); 
 	windowClientMsgCenter.notifyClients("hello"); //癸莱function﹚CustomedWindowClient,┮礚猭硄linuxClient
