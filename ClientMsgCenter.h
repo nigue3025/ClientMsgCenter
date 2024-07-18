@@ -22,6 +22,8 @@
 #define MsgCtrClientMsg const char*
 #endif
 
+
+
 //template<typename ClientIDType>
 class Client
 {
@@ -31,6 +33,9 @@ public:
     virtual void dummy();
     ~Client();
 };
+
+
+
 
 //template<typename ClientIDType>
 class ClientMsgCenter
@@ -56,12 +61,13 @@ public:
 
     ClientMsgCenter();
     ~ClientMsgCenter();
-
+#ifdef _WIN32
     static std::string HWNDToString(HWND hwnd);
-
+#endif
 protected:
     virtual bool notifyClients_internal(const MsgCtrClientMsg&); //依據訂閱資訊判定是否要傳送訊息給訂閱端client
     std::string LastErrorStr = ""; //錯誤message儲存字串
+    int curClientSize = 0;
 };
 
 

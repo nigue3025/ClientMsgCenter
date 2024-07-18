@@ -40,8 +40,9 @@ bool  ClientMsgCenter::responseQuery(std::shared_ptr<Client>client, MsgCtrClient
 
 bool ClientMsgCenter::notifyClients_internal(const MsgCtrClientMsg& clientMsg)
 {
-    LastErrorStr.clear();
+
     std::lock_guard<std::mutex> lock(clientCtrMtx);
+    LastErrorStr.clear();
     if (subscriptionReponseFunctions.find(clientMsg) == subscriptionReponseFunctions.end())
     {
         LastErrorStr = "Subscrition string not defined: " + clientMsg;
@@ -140,6 +141,7 @@ bool ClientMsgCenter::subscribe(std::shared_ptr<Client>theClient, MsgCtrClientMs
         clients_sublst[theClient] = std::vector<MsgCtrClientMsg>();
 
     }
+
     auto client = clients[theClient->ID];
     auto client_sub = &clients_sublst[client];
     std::vector<MsgCtrClientMsg>::iterator itr;
@@ -147,6 +149,7 @@ bool ClientMsgCenter::subscribe(std::shared_ptr<Client>theClient, MsgCtrClientMs
     {
         client_sub->push_back(msg);
         msgCenter[msg].push_back(client);
+        curClientSize = clients.size();
         return true;
     }
     else
@@ -154,7 +157,7 @@ bool ClientMsgCenter::subscribe(std::shared_ptr<Client>theClient, MsgCtrClientMs
         LastErrorStr = "Repeat Subscription";
     }
     //
-
+    curClientSize = clients.size();
     return false;
 }
 
@@ -182,6 +185,7 @@ bool ClientMsgCenter::unsubscribe(std::shared_ptr<Client> theClient, MsgCtrClien
         if ((clItr = std::find(clientLst->begin(), clientLst->end(), client)) != clientLst->end())
         {
             clientLst->erase(clItr);
+            curClientSize = clients.size();
             return true;
         }
         else
@@ -194,7 +198,7 @@ bool ClientMsgCenter::unsubscribe(std::shared_ptr<Client> theClient, MsgCtrClien
     {
         LastErrorStr = "The client:" + client->ID + " is not found in clients_sublst";
     }
-
+    curClientSize = clients.size();
     return false;
 }
 
